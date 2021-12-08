@@ -26,9 +26,7 @@ from wandb.keras import WandbCallback
 from sklearn import metrics
 import matplotlib.pyplot as plt
 import pandas
-## Trianing my model
-from tensorflow.keras.callbacks import ModelCheckpoint
-from datetime import datetime 
+
 
 import performance
 import audio_process
@@ -55,7 +53,7 @@ def classifier_accuracy(clf, X_test, y_test, method = ''):
 
 def classifier_process(clf, count, method = ''):
     #split data to train and test
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.33, random_state = 42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.25, random_state = 42)
     clf.fit(X_train, y_train)
     
     print('Number of trains:', len(y_train))
@@ -77,11 +75,11 @@ def classifier_process(clf, count, method = ''):
     
     return gen_scores, imp_scores, matching_scores, count, y_test
 #-----MAIN CODE--------
-audio_directory = 'Project 2 Database'
-
+#audio_directory = 'Project 2 Database'
+audio_directory = 'Gender Dataset'
 
 #return: audios and their labels: parameter: audio_dir, to_save, save_dir
-X, y = audio_process.get_audios(audio_directory,False, 'spectrograms/')
+X, y = audio_process.get_audios(audio_directory,False, 'Data/')
 
 X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=20)
 '''
@@ -96,11 +94,14 @@ print('System:')
 number_of_classifier = 0
 # create an instance of the classifier
 clf = ORC(SVC(kernel = 'linear', probability=True))
+#clf = ORC(SVC(probability=True))
 method = 'SVC'
 gen_scores, imp_scores, matching_scores, number_of_classifier, y_test = classifier_process(clf, number_of_classifier, method)
 
 clf2 = ORC(KNeighborsClassifier(3))
 method2 = 'KNN(k = 3)'
+#clf2 = ORC(GaussianNB())
+#method2 = 'Gaussian Naive Bayes'
 gen_scores2, imp_scores2, matching_scores2, number_of_classifier, y_test = classifier_process(clf2, number_of_classifier, method2)
 
 clf3 = ORC(MLPClassifier(random_state=1, max_iter=300))
@@ -114,7 +115,7 @@ if number_of_classifier == 3:
     
     #collect genuine and impostor scores of the optimal case
     gen_scores_avg, imp_scores_avg = score_process(matching_scores_avg, y_test)
-    method_avg = 'Optimization System'
+    method_avg = 'Score Level Fusion'
     
     #use classifiers for performance
     performance.performance(gen_scores, imp_scores, gen_scores2, imp_scores2, gen_scores3, imp_scores3, 
